@@ -5,7 +5,7 @@ FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
 USER root
 
 # Single RUN layer to minimize image size and prevent caching issues.
-# Installs XFCE, VNC, noVNC, and Firefox with anti-corruption checks.
+# Installs XFCE, VNC, noVNC, Firefox, and dbus-x11 with anti-corruption checks.
 RUN apt-get update && \
     export DEBIAN_FRONTEND=noninteractive && \
     apt-get install -y --no-install-recommends \
@@ -16,11 +16,13 @@ RUN apt-get update && \
         novnc \
         websockify \
         firefox \
+        dbus-x11 \
     && \
     # Anti-corruption: Verify critical binaries exist.
     which tigervncpasswd || (echo "Error: tigervncpasswd not found" && exit 1) && \
     which tigervncserver || (echo "Error: tigervncserver not found" && exit 1) && \
     which websockify || (echo "Error: websockify not found" && exit 1) && \
+    which dbus-launch || (echo "Error: dbus-launch not found" && exit 1) && \
     # Create VNC config directory with strict permissions.
     mkdir -p /home/vscode/.vnc && \
     # Set VNC password securely (password: ubuntu).
@@ -31,6 +33,8 @@ RUN apt-get update && \
     echo "# Anti-corruption: Clear session variables to prevent XFCE issues." >> /home/vscode/.vnc/xstartup && \
     echo "unset SESSION_MANAGER" >> /home/vscode/.vnc/xstartup && \
     echo "unset DBUS_SESSION_BUS_ADDRESS" >> /home/vscode/.vnc/xstartup && \
+    echo "# Start D-Bus session." >> /home/vscode/.vnc/xstartup && \
+    echo "dbus-launch --exit-with-session > /home/vscode/.vnc/dbus.log 2>&1" >> /home/vscode/.vnc/xstartup && \
     echo "# Load X resources if present." >> /home/vscode/.vnc/xstartup && \
     echo "[ -r \$HOME/.Xresources ] && xrdb \$HOME/.Xresources" >> /home/vscode/.vnc/xstartup && \
     echo "# Start vncconfig for clipboard support." >> /home/vscode/.vnc/xstartup && \
@@ -41,6 +45,9 @@ RUN apt-get update && \
     # Anti-corruption: Verify VNC config files.
     test -f /home/vscode/.vnc/passwd || (echo "Error: VNC passwd file not created" && exit 1) && \
     test -f /home/vscode/.vnc/xstartup || (echo "Error: VNC xstartup file not created" && exit 1) && \
+    # Fix /tmp/.X11-unix permissions.
+    mkdir -p /tmp/.X11-unix && \
+    chmod 1777 /tmp/.X11-unix && \
     # Anti-corruption: Clean up to prevent stale caches or apt issues.
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
