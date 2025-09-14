@@ -1,0 +1,21 @@
+{
+    "name": "Ubuntu VNC Desktop",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    // Forward VNC and noVNC ports for local browser access in Codespaces.
+    "forwardPorts": [5901, 6080],
+    // After container creation, fix ownership and start services.
+    "postCreateCommand": "sudo chown -R vscode:vscode /home/vscode/.vnc && echo 'VNC setup complete! Password: ubuntu'",
+    "postStartCommand": "vncserver :1 -geometry 1280x720 -depth 24 -localhost no & sleep 2 && websockify --web=/usr/share/novnc 6080 localhost:5901 & echo 'VNC server started on :1 (port 5901). noVNC on port 6080.'",
+    // Optional: VS Code extensions for development.
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-vscode-remote.remote-containers"
+            ]
+        }
+    },
+    // Run in a shell for persistence.
+    "remoteUser": "vscode"
+}
