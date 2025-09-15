@@ -23,7 +23,8 @@ RUN sudo apt-get update && \
     sudo rm -rf /var/lib/apt/lists/*
 
 # --- LAYER 2: Download and install Tor Browser ---
-RUN curl -L "https://www.torproject.org/dist/torbrowser/13.0.10/tor-browser-linux-x86_64-13.0.10.tar.xz" -o /tmp/tor.tar.xz && \
+# Using a more direct and stable download link
+RUN curl -L "https://archive.torproject.org/tor-package-archive/torbrowser/13.0.10/tor-browser-linux-x86_64-13.0.10.tar.xz" -o /tmp/tor.tar.xz && \
     tar -xvf /tmp/tor.tar.xz --strip-components=1 -C /opt/ && \
     rm /tmp/tor.tar.xz && \
     chown -R vscode:vscode /opt/tor-browser
