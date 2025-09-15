@@ -33,20 +33,21 @@ RUN apt-get update && \
     echo "# Anti-corruption: Clear session variables to prevent XFCE issues." >> /home/vscode/.vnc/xstartup && \
     echo "unset SESSION_MANAGER" >> /home/vscode/.vnc/xstartup && \
     echo "unset DBUS_SESSION_BUS_ADDRESS" >> /home/vscode/.vnc/xstartup && \
+    echo "# Ensure X11 socket directory." >> /home/vscode/.vnc/xstartup && \
+    echo "mkdir -p /tmp/.X11-unix && chmod 1777 /tmp/.X11-unix" >> /home/vscode/.vnc/xstartup && \
     echo "# Start D-Bus session." >> /home/vscode/.vnc/xstartup && \
-    echo "dbus-launch --exit-with-session > /home/vscode/.vnc/dbus.log 2>&1" >> /home/vscode/.vnc/xstartup && \
+    echo "dbus-launch --exit-with-session bash -c 'export DISPLAY=:1; startxfce4 &' > /home/vscode/.vnc/dbus.log 2>&1" >> /home/vscode/.vnc/xstartup && \
     echo "# Load X resources if present." >> /home/vscode/.vnc/xstartup && \
     echo "[ -r \$HOME/.Xresources ] && xrdb \$HOME/.Xresources" >> /home/vscode/.vnc/xstartup && \
     echo "# Start vncconfig for clipboard support." >> /home/vscode/.vnc/xstartup && \
     echo "vncconfig -iconic &" >> /home/vscode/.vnc/xstartup && \
-    echo "# Start XFCE desktop." >> /home/vscode/.vnc/xstartup && \
-    echo "startxfce4 &" >> /home/vscode/.vnc/xstartup && \
     chmod 700 /home/vscode/.vnc/xstartup && \
     # Anti-corruption: Verify VNC config files.
     test -f /home/vscode/.vnc/passwd || (echo "Error: VNC passwd file not created" && exit 1) && \
     test -f /home/vscode/.vnc/xstartup || (echo "Error: VNC xstartup file not created" && exit 1) && \
-    # Fix /tmp/.X11-unix permissions.
+    # Fix /tmp/.X11-unix permissions and ownership.
     mkdir -p /tmp/.X11-unix && \
+    chown root:root /tmp/.X11-unix && \
     chmod 1777 /tmp/.X11-unix && \
     # Anti-corruption: Clean up to prevent stale caches or apt issues.
     apt-get clean && \
