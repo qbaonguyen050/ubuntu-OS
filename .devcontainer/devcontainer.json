@@ -1,10 +1,10 @@
 {
-  "name": "Cloaked Firefox Desktop",
+  "name": "Doubly-Cloaked Secure Terminal",
   "build": {
     "dockerfile": "Dockerfile"
   },
   "forwardPorts": [
-    6080
+    7681
   ],
   "postCreateCommand": "/usr/local/bin/startup.sh",
   "customizations": {
