@@ -4,7 +4,8 @@ FROM mcr.microsoft.com/devcontainers/base:bullseye
 # Set DEBIAN_FRONTEND to noninteractive to prevent all interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
-# --- LAYER 1: Install all software packages from apt ---
+# --- LAYER 1: Install all software packages ---
+# We are installing the XFCE desktop, VNC tools, and Firefox.
 RUN sudo apt-get update && \
     sudo apt-get install -y --no-install-recommends \
     xfce4 \
@@ -15,20 +16,16 @@ RUN sudo apt-get update && \
     websockify \
     tor \
     dbus-x11 \
-    lynx \
-    curl && \
+    firefox-esr && \
     # Clean up apt cache
     sudo apt-get clean && \
     sudo rm -rf /var/lib/apt/lists/*
 
-# --- LAYER 2: Manually download and install ttyd ---
-RUN curl -sL https://github.com/tsl0922/ttyd/releases/download/1.7.4/ttyd.x86_64 -o /tmp/ttyd && \
-    sudo install -m 755 /tmp/ttyd /usr/local/bin/ttyd
-
-# --- LAYER 3: Configure the VNC user, password, and xstartup script ---
+# --- LAYER 2: Configure the VNC user, password, and xstartup script ---
 RUN mkdir -p /home/vscode/.vnc && \
     echo "vscode" | /usr/bin/vncpasswd -f > /home/vscode/.vnc/passwd && \
     chmod 600 /home/vscode/.vnc/passwd && \
+    # Create the xstartup file to properly launch XFCE with D-Bus
     echo '#!/bin/bash\n\
 unset SESSION_MANAGER\n\
 unset DBUS_SESSION_BUS_ADDRESS\n\
@@ -37,10 +34,8 @@ unset DBUS_SESSION_BUS_ADDRESS\n\
     chmod 755 /home/vscode/.vnc/xstartup && \
     chown -R vscode:vscode /home/vscode/.vnc
 
-# --- LAYER 4: Create the main container startup script ---
+# --- LAYER 3: Create the main container startup script ---
 RUN echo '#!/bin/bash\n\
-# Start ttyd web terminal on port 7681 in the background\n\
-ttyd bash > /dev/null 2>&1 &\n\
 # Clean up old VNC lock files\n\
 rm -f /tmp/.X1-lock /tmp/.X11-unix/X1\n\
 # Start the Tor service\n\
@@ -52,5 +47,5 @@ sudo service tor start\n\
 ' > /usr/local/bin/startup.sh && \
     chmod +x /usr/local/bin/startup.sh
 
-# Expose the ports
-EXPOSE 6080 7681
+# Expose the VNC web port
+EXPOSE 6080
