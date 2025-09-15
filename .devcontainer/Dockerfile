@@ -1,8 +1,14 @@
 # Use the base Ubuntu image
 FROM mcr.microsoft.com/devcontainers/base:jammy
 
+# Set the locale to en_US.UTF-8 to prevent language selection prompt
+ENV LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8
+RUN sudo apt-get update && sudo apt-get install -y locales && sudo locale-gen en_US.UTF-8
+
 # Install Ubuntu Desktop (XFCE), TigerVNC, and noVNC web client
-RUN sudo apt-get update && export DEBIAN_FRONTEND=noninteractive \
+RUN export DEBIAN_FRONTEND=noninteractive \
     && sudo apt-get -y install --no-install-recommends ubuntu-desktop xfce4 xfce4-goodies tigervnc-standalone-server novnc websockify
 
 # Create a startup script that will launch the VNC and web servers
