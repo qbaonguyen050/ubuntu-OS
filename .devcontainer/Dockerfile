@@ -1,10 +1,11 @@
-# Use the Debian 11 (Bullseye) base image, the same foundation as Whonix
+# Use the Debian 11 (Bullseye) base image
 FROM mcr.microsoft.com/devcontainers/base:bullseye
 
 # Set DEBIAN_FRONTEND to noninteractive to prevent all interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
 # --- LAYER 1: Install all software packages ---
+# Added firefox-esr to the list of packages to install.
 RUN sudo apt-get update && \
     sudo apt-get install -y --no-install-recommends \
     xfce4 \
@@ -15,22 +16,12 @@ RUN sudo apt-get update && \
     websockify \
     tor \
     dbus-x11 \
-    curl \
-    tar \
-    libfontconfig1 && \
+    firefox-esr && \
     # Clean up apt cache
     sudo apt-get clean && \
     sudo rm -rf /var/lib/apt/lists/*
 
-# --- LAYER 2: Download and install Tor Browser ---
-# Create the target directory first, then extract into it.
-RUN sudo mkdir -p /opt/tor-browser && \
-    curl -L "https://archive.torproject.org/tor-package-archive/torbrowser/13.0.10/tor-browser-linux-x86_64-13.0.10.tar.xz" -o /tmp/tor.tar.xz && \
-    sudo tar -xvf /tmp/tor.tar.xz --strip-components=1 -C /opt/tor-browser && \
-    rm /tmp/tor.tar.xz && \
-    sudo chown -R vscode:vscode /opt/tor-browser
-
-# --- LAYER 3: Configure the VNC user, password, and xstartup script ---
+# --- LAYER 2: Configure the VNC user, password, and xstartup script ---
 RUN mkdir -p /home/vscode/.vnc && \
     echo "vscode" | /usr/bin/vncpasswd -f > /home/vscode/.vnc/passwd && \
     chmod 600 /home/vscode/.vnc/passwd && \
@@ -43,13 +34,13 @@ unset DBUS_SESSION_BUS_ADDRESS\n\
     chmod 755 /home/vscode/.vnc/xstartup && \
     chown -R vscode:vscode /home/vscode/.vnc
 
-# --- LAYER 4: Create the main container startup script ---
+# --- LAYER 3: Create the main container startup script ---
 RUN echo '#!/bin/bash\n\
 # Clean up old VNC lock files\n\
 rm -f /tmp/.X1-lock /tmp/.X11-unix/X1\n\
 # Start the Tor service\n\
 sudo service tor start\n\
-# Start VNC server (it will automatically use the xstartup file we created)\n\
+# Start VNC server\n\
 /usr/bin/vncserver :1 -localhost no -geometry 1280x720 -SecurityTypes VncAuth -passwd /home/vscode/.vnc/passwd\n\
 # Start the noVNC web client\n\
 /usr/bin/websockify --web=/usr/share/novnc/ 6080 localhost:5901\n\
