@@ -33,10 +33,10 @@ RUN apt-get update && \
     echo "# Anti-corruption: Clear session variables to prevent XFCE issues." >> /home/vscode/.vnc/xstartup && \
     echo "unset SESSION_MANAGER" >> /home/vscode/.vnc/xstartup && \
     echo "unset DBUS_SESSION_BUS_ADDRESS" >> /home/vscode/.vnc/xstartup && \
-    echo "# Ensure X11 socket directory." >> /home/vscode/.vnc/xstartup && \
-    echo "mkdir -p /tmp/.X11-unix && chmod 1777 /tmp/.X11-unix" >> /home/vscode/.vnc/xstartup && \
-    echo "# Start D-Bus session." >> /home/vscode/.vnc/xstartup && \
-    echo "dbus-launch --exit-with-session bash -c 'export DISPLAY=:1; startxfce4 &' > /home/vscode/.vnc/dbus.log 2>&1" >> /home/vscode/.vnc/xstartup && \
+    echo "# Set DISPLAY explicitly." >> /home/vscode/.vnc/xstartup && \
+    echo "export DISPLAY=:1" >> /home/vscode/.vnc/xstartup && \
+    echo "# Start D-Bus session and XFCE." >> /home/vscode/.vnc/xstartup && \
+    echo "dbus-launch --exit-with-session startxfce4 > /home/vscode/.vnc/dbus.log 2>&1 &" >> /home/vscode/.vnc/xstartup && \
     echo "# Load X resources if present." >> /home/vscode/.vnc/xstartup && \
     echo "[ -r \$HOME/.Xresources ] && xrdb \$HOME/.Xresources" >> /home/vscode/.vnc/xstartup && \
     echo "# Start vncconfig for clipboard support." >> /home/vscode/.vnc/xstartup && \
