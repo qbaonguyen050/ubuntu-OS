@@ -6,9 +6,9 @@
     // Forward VNC and noVNC ports for local access.
     "forwardPorts": [5901, 6080],
     // Post-create: Authoritatively fix ownership with sudo to prevent permission issues.
-    "postCreateCommand": "sudo chown -R vscode:vscode /home/vscode/.vnc && sudo chmod -R u+rwX /home/vscode/.vnc && echo 'VNC setup complete! Password: ubuntu'",
-    // Post-start: Auto-start VNC server and noVNC with robust checks.
-    "postStartCommand": "vncserver :1 -geometry 1280x720 -depth 24 -localhost no || (echo 'VNC server failed to start'; exit 1) && sleep 2 && websockify --web=/usr/share/novnc 6080 localhost:5901 || (echo 'websockify failed to start'; exit 1) && echo 'VNC server started on :1 (port 5901). noVNC on port 6080.'",
+    "postCreateCommand": "sudo chown -R vscode:vscode /home/vscode/.vnc && sudo chmod -R u+rwX /home/vscode/.vnc && sudo mkdir -p /tmp/.X11-unix && sudo chown root:root /tmp/.X11-unix && sudo chmod 1777 /tmp/.X11-unix && echo 'VNC setup complete! Password: ubuntu'",
+    // Post-start: Auto-start VNC server and noVNC with robust checks and logging.
+    "postStartCommand": "vncserver -kill :1 >/dev/null 2>&1; for i in {1..3}; do vncserver :1 -geometry 1280x720 -depth 24 -localhost no > /home/vscode/.vnc/start.log 2>&1 && break || sleep 2; done && sleep 2 && websockify --web=/usr/share/novnc 6080 localhost:5901 > /home/vscode/.vnc/websockify.log 2>&1 & echo 'VNC server started on :1 (port 5901). noVNC on port 6080.'",
     // Anti-corruption: Ensure clean runtime environment.
     "containerEnv": {
         "DISPLAY": ":1",
