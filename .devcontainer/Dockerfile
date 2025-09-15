@@ -1,15 +1,30 @@
 # Use the base Ubuntu image
 FROM mcr.microsoft.com/devcontainers/base:jammy
 
-# Set the locale to en_US.UTF-8 to prevent language selection prompt
-ENV LANG=en_US.UTF-8 \
+# Set DEBIAN_FRONTEND to noninteractive to prevent all interactive prompts during apt-get install.
+# Also set the locale to en_US.UTF-8.
+ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=en_US.UTF-8 \
     LANGUAGE=en_US:en \
     LC_ALL=en_US.UTF-8
-RUN sudo apt-get update && sudo apt-get install -y locales && sudo locale-gen en_US.UTF-8
 
-# Install Ubuntu Desktop (XFCE), TigerVNC, and noVNC web client
-RUN export DEBIAN_FRONTEND=noninteractive \
-    && sudo apt-get -y install --no-install-recommends ubuntu-desktop xfce4 xfce4-goodies tigervnc-standalone-server novnc websockify
+# Update, generate locale, pre-configure keyboard, and install all packages in a single command layer
+RUN sudo apt-get update && \
+    sudo apt-get install -y locales && \
+    sudo locale-gen en_US.UTF-8 && \
+    # Pre-configure keyboard layout to US to prevent prompts
+    echo "keyboard-configuration keyboard-configuration/layoutcode string us" | sudo debconf-set-selections && \
+    # Install the desktop environment and VNC tools
+    sudo apt-get install -y --no-install-recommends \
+    ubuntu-desktop \
+    xfce4 \
+    xfce4-goodies \
+    tigervnc-standalone-server \
+    novnc \
+    websockify && \
+    # Clean up apt cache to reduce image size
+    sudo apt-get clean && \
+    sudo rm -rf /var/lib/apt/lists/*
 
 # Create a startup script that will launch the VNC and web servers
 RUN echo '#!/bin/bash\n\
