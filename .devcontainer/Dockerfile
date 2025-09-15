@@ -4,7 +4,8 @@ FROM mcr.microsoft.com/devcontainers/base:jammy
 # Set DEBIAN_FRONTEND to noninteractive to prevent all interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Update, pre-configure keyboard, install packages, and PRE-CREATE the VNC password
+# --- LAYER 1: Install all software packages ---
+# This layer installs all necessary tools.
 RUN sudo apt-get update && \
     echo "keyboard-configuration keyboard-configuration/layoutcode string us" | sudo debconf-set-selections && \
     sudo apt-get install -y --no-install-recommends \
@@ -15,16 +16,18 @@ RUN sudo apt-get update && \
     novnc \
     websockify \
     dbus-x11 && \
-    # Pre-create the VNC password file during the build for the 'vscode' user
-    mkdir -p /home/vscode/.vnc && \
-    echo "vscode" | vncpasswd -f > /home/vscode/.vnc/passwd && \
-    chmod 600 /home/vscode/.vnc/passwd && \
-    chown -R vscode:vscode /home/vscode/.vnc && \
     # Clean up apt cache
     sudo apt-get clean && \
     sudo rm -rf /var/lib/apt/lists/*
 
-# Create a startup script that cleans up and launches the servers
+# --- LAYER 2: Configure the VNC user and password ---
+# This layer runs AFTER the tools are installed, so vncpasswd will be found.
+RUN mkdir -p /home/vscode/.vnc && \
+    echo "vscode" | vncpasswd -f > /home/vscode/.vnc/passwd && \
+    chmod 600 /home/vscode/.vnc/passwd && \
+    chown -R vscode:vscode /home/vscode/.vnc
+
+# --- LAYER 3: Create the startup script ---
 RUN echo '#!/bin/bash\n\
 # Clean up old VNC lock files that might prevent startup\n\
 rm -f /tmp/.X1-lock /tmp/.X11-unix/X1\n\
