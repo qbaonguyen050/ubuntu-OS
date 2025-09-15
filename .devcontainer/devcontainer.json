@@ -13,7 +13,8 @@
     "containerEnv": {
         "DISPLAY": ":1",
         "LANG": "C.UTF-8",
-        "HOME": "/home/vscode"
+        "HOME": "/home/vscode",
+        "XAUTHORITY": "/home/vscode/.Xauthority"
     },
     // Optional: VS Code extensions and settings.
     "customizations": {
