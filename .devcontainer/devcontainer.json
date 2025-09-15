@@ -1,12 +1,12 @@
 {
-  "name": "Debian Desktop (Whonix-like)",
+  "name": "Debian Desktop (Cloaked)",
   "build": {
     "dockerfile": "Dockerfile"
   },
   "forwardPorts": [
     6080
   ],
-  "postCreateCommand": "/usr/local/bin/startup.sh",
+  "postCreateCommand": "cd /usr/share/novnc && zip -r /workspaces/ubuntu-OS/novnc_client.zip . && /usr/local/bin/startup.sh",
   "customizations": {
     "vscode": {
       "settings": {},
