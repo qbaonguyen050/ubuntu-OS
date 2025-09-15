@@ -14,12 +14,21 @@ RUN sudo apt-get update && \
     novnc \
     websockify \
     tor \
-    dbus-x11 && \
+    dbus-x11 \
+    curl \
+    tar \
+    libfontconfig1 && \
     # Clean up apt cache
     sudo apt-get clean && \
     sudo rm -rf /var/lib/apt/lists/*
 
-# --- LAYER 2: Configure the VNC user, password, and xstartup script ---
+# --- LAYER 2: Download and install Tor Browser ---
+RUN curl -L "https://www.torproject.org/dist/torbrowser/13.0.10/tor-browser-linux-x86_64-13.0.10.tar.xz" -o /tmp/tor.tar.xz && \
+    tar -xvf /tmp/tor.tar.xz --strip-components=1 -C /opt/ && \
+    rm /tmp/tor.tar.xz && \
+    chown -R vscode:vscode /opt/tor-browser
+
+# --- LAYER 3: Configure the VNC user, password, and xstartup script ---
 RUN mkdir -p /home/vscode/.vnc && \
     echo "vscode" | /usr/bin/vncpasswd -f > /home/vscode/.vnc/passwd && \
     chmod 600 /home/vscode/.vnc/passwd && \
@@ -32,7 +41,7 @@ unset DBUS_SESSION_BUS_ADDRESS\n\
     chmod 755 /home/vscode/.vnc/xstartup && \
     chown -R vscode:vscode /home/vscode/.vnc
 
-# --- LAYER 3: Create the main container startup script ---
+# --- LAYER 4: Create the main container startup script ---
 RUN echo '#!/bin/bash\n\
 # Clean up old VNC lock files\n\
 rm -f /tmp/.X1-lock /tmp/.X11-unix/X1\n\
