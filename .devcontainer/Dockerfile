@@ -4,7 +4,7 @@ FROM mcr.microsoft.com/devcontainers/base:bullseye
 # Set DEBIAN_FRONTEND to noninteractive to prevent all interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
-# --- LAYER 1: Install all software packages ---
+# --- LAYER 1: Install all software packages (including zip) ---
 RUN sudo apt-get update && \
     sudo apt-get install -y --no-install-recommends \
     xfce4 \
@@ -33,10 +33,7 @@ unset DBUS_SESSION_BUS_ADDRESS\n\
     chmod 755 /home/vscode/.vnc/xstartup && \
     chown -R vscode:vscode /home/vscode/.vnc
 
-# --- LAYER 3: Create the noVNC client zip file for local use ---
-RUN cd /usr/share/novnc && zip -r /workspaces/ubuntu-OS/novnc_client.zip .
-
-# --- LAYER 4: Create the main container startup script ---
+# --- LAYER 3: Create the main container startup script ---
 RUN echo '#!/bin/bash\n\
 # Clean up old VNC lock files\n\
 rm -f /tmp/.X1-lock /tmp/.X11-unix/X1\n\
