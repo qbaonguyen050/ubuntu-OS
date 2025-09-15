@@ -5,7 +5,6 @@ FROM mcr.microsoft.com/devcontainers/base:bullseye
 ENV DEBIAN_FRONTEND=noninteractive
 
 # --- LAYER 1: Install all software packages ---
-# This installs the XFCE desktop, VNC tools, and Firefox.
 RUN sudo apt-get update && \
     sudo apt-get install -y --no-install-recommends \
     xfce4 \
@@ -25,8 +24,11 @@ RUN sudo apt-get update && \
 RUN mkdir -p /home/vscode/.vnc && \
     echo "vscode" | /usr/bin/vncpasswd -f > /home/vscode/.vnc/passwd && \
     chmod 600 /home/vscode/.vnc/passwd && \
-    # Create the xstartup file to properly launch XFCE with D-Bus
+    # Create the xstartup file to properly launch XFCE with D-Bus AND the clipboard manager
     echo '#!/bin/bash\n\
+# Start the clipboard manager in the background\n\
+vncconfig -nowin &\n\
+# Unset session variables and start the XFCE desktop\n\
 unset SESSION_MANAGER\n\
 unset DBUS_SESSION_BUS_ADDRESS\n\
 /usr/bin/dbus-launch --exit-with-session /usr/bin/xfce4-session\n\
