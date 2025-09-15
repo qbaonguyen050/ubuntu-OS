@@ -6,7 +6,8 @@
   "forwardPorts": [
     6080
   ],
-  "postCreateCommand": "/usr/local/bin/startup.sh",
+  // This is the key change: from "postCreateCommand" to "postStartCommand"
+  "postStartCommand": "/usr/local/bin/startup.sh",
   "customizations": {
     "vscode": {
       "settings": {},
