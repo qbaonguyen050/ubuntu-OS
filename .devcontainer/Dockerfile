@@ -23,11 +23,12 @@ RUN sudo apt-get update && \
     sudo rm -rf /var/lib/apt/lists/*
 
 # --- LAYER 2: Download and install Tor Browser ---
-# Using a more direct and stable download link
-RUN curl -L "https://archive.torproject.org/tor-package-archive/torbrowser/13.0.10/tor-browser-linux-x86_64-13.0.10.tar.xz" -o /tmp/tor.tar.xz && \
-    tar -xvf /tmp/tor.tar.xz --strip-components=1 -C /opt/ && \
+# Create the target directory first, then extract into it.
+RUN sudo mkdir -p /opt/tor-browser && \
+    curl -L "https://archive.torproject.org/tor-package-archive/torbrowser/13.0.10/tor-browser-linux-x86_64-13.0.10.tar.xz" -o /tmp/tor.tar.xz && \
+    sudo tar -xvf /tmp/tor.tar.xz --strip-components=1 -C /opt/tor-browser && \
     rm /tmp/tor.tar.xz && \
-    chown -R vscode:vscode /opt/tor-browser
+    sudo chown -R vscode:vscode /opt/tor-browser
 
 # --- LAYER 3: Configure the VNC user, password, and xstartup script ---
 RUN mkdir -p /home/vscode/.vnc && \
